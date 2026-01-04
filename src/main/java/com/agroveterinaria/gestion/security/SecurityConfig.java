@@ -1,0 +1,65 @@
+package com.agroveterinaria.gestion.security; // <--- AJUSTA ESTO SI TU CARPETA ES DIFERENTE
+
+import com.agroveterinaria.gestion.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    // Nota: No necesitas inyectar UserDetailsService aquí si no lo usas explícitamente,
+    // Spring lo encuentra solo para el AuthenticationManager.
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para API REST
+                .authorizeHttpRequests(auth -> auth
+                        // Rutas públicas (Login y Registro)
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // Rutas de ADMIN
+                        .requestMatchers("/api/compras/**").hasRole("ADMIN")
+                        .requestMatchers("/api/proveedores/**").hasRole("ADMIN")
+                        .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/api/arqueos/**").hasRole("ADMIN")
+
+                        // Rutas Compartidas (Vendedor y Admin)
+                        .requestMatchers("/api/ventas/**").hasAnyRole("ADMIN", "VENDEDOR")
+                        .requestMatchers("/api/clientes/**").hasAnyRole("ADMIN", "VENDEDOR")
+                        .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "VENDEDOR")
+                        .requestMatchers("/api/categorias/**").hasAnyRole("ADMIN", "VENDEDOR")
+
+                        // Todo lo demás requiere autenticación
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+}
