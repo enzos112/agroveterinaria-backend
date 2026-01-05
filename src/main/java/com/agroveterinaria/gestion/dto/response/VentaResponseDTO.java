@@ -11,7 +11,7 @@ public class VentaResponseDTO {
     private Long id;
     private LocalDateTime fecha;
     private String nombreVendedor;
-    private String nombreCliente; // "Cliente Anónimo" si es null
+    private String nombreCliente;
     private BigDecimal total;
     private BigDecimal descuentoAplicado;
     private EstadoVenta estado;

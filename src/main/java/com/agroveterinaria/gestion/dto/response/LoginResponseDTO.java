@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class LoginResponseDTO {
-    private String token; // El JWT largo
+    private String token;
     private String nombreUsuario;
-    private String rol; // "ADMIN" o "VENDEDOR"
+    private String rol;
 }

@@ -10,5 +10,5 @@ public class CierreCajaDTO {
     @PositiveOrZero(message = "El monto contado no puede ser negativo")
     private BigDecimal efectivoContadoPorUsuario;
 
-    private String justificacion; // Opcional al inicio, obligatorio si hay error
+    private String justificacion;
 }

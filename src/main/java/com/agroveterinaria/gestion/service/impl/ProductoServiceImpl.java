@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor // Inyección de dependencias por constructor automática
+@RequiredArgsConstructor
 public class ProductoServiceImpl implements ProductoService {
 
     private final ProductoRepository productoRepository;
@@ -31,34 +31,30 @@ public class ProductoServiceImpl implements ProductoService {
     private final LoteProductoRepository loteRepository;
 
     @Override
-    @Transactional // Si falla algo, hace rollback de todo
+    @Transactional
     public ProductoResponseDTO registrarProducto(CrearProductoDTO dto) {
-        // 1. Validar Categoría
         Categoria categoria = categoriaRepository.findById(dto.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        // 2. Crear Entidad
         Producto producto = new Producto();
         producto.setNombre(dto.getNombre());
         producto.setDescripcion(dto.getDescripcion());
         producto.setTieneVencimiento(dto.getTieneVencimiento());
         producto.setCategoria(categoria);
 
-        // 3. Guardar en BD
-        Producto guardado = productoRepository.save(producto);
+        producto.setStock(0);
+        producto.setStockGranel(0.0);
 
-        // 4. Convertir a DTO Response
+        Producto guardado = productoRepository.save(producto);
         return mapToDTO(guardado);
     }
 
     @Override
     @Transactional
     public ProductoResponseDTO agregarVariante(CrearVarianteDTO dto) {
-        // 1. Buscar al padre
         Producto producto = productoRepository.findById(dto.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto padre no encontrado"));
 
-        // 2. Crear la variante (La presentación física)
         VarianteProducto variante = new VarianteProducto();
         variante.setProducto(producto);
         variante.setNombreVariante(dto.getNombreVariante());
@@ -67,22 +63,20 @@ public class ProductoServiceImpl implements ProductoService {
         variante.setPrecioVentaMayorista(dto.getPrecioVentaMayorista());
         variante.setStockMinimoAlerta(dto.getStockMinimoAlerta());
 
-        // Lógica de "Abrir Saco"
+        // Configuramos la variante
         variante.setSePuedeAbrir(dto.isSePuedeAbrir());
         if (dto.getFactorConversion() != null) {
             variante.setFactorConversion(dto.getFactorConversion());
         }
 
         varianteRepository.save(variante);
-
-        // Retornamos el producto padre actualizado con su nueva variante
         return mapToDTO(producto);
     }
 
     @Override
     public List<ProductoResponseDTO> listarTodos() {
         return productoRepository.findAll().stream()
-                .map(this::mapToDTO) // Usamos el método helper de abajo
+                .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -93,9 +87,26 @@ public class ProductoServiceImpl implements ProductoService {
                 .collect(Collectors.toList());
     }
 
-    // ==========================================
-    // MÉTODOS PRIVADOS (Mappers manuales)
-    // ==========================================
+    @Override
+    @Transactional
+    public Producto abrirUnidad(Long idProducto) {
+        Producto producto = productoRepository.findById(idProducto)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (producto.getStock() == null || producto.getStock() < 1) {
+            throw new RuntimeException("No hay suficiente stock cerrado para abrir.");
+        }
+        if (producto.getFactorConversion() == null || producto.getFactorConversion() <= 0) {
+            throw new RuntimeException("El producto no tiene configurado el factor de conversión (cuánto trae).");
+        }
+
+        producto.setStock(producto.getStock() - 1);
+
+        Double granelActual = (producto.getStockGranel() == null) ? 0.0 : producto.getStockGranel();
+        producto.setStockGranel(granelActual + producto.getFactorConversion());
+
+        return productoRepository.save(producto);
+    }
 
     private ProductoResponseDTO mapToDTO(Producto entidad) {
         ProductoResponseDTO dto = new ProductoResponseDTO();
@@ -105,7 +116,6 @@ public class ProductoServiceImpl implements ProductoService {
         dto.setTieneVencimiento(entidad.isTieneVencimiento());
 
         List<VarianteProducto> variantes = varianteRepository.findByProductoId(entidad.getId());
-
         List<VarianteResponseDTO> variantesDTO = variantes.stream()
                 .map(this::mapVarianteToDTO)
                 .collect(Collectors.toList());
@@ -121,20 +131,16 @@ public class ProductoServiceImpl implements ProductoService {
         dto.setPrecioVenta(v.getPrecioVentaPublico());
         dto.setUnidad(v.getUnidadMedida());
 
-        // 2. OBTENER STOCK REAL DESDE BD
         BigDecimal stockTotal = loteRepository.obtenerStockTotal(v.getId());
+
+        if (stockTotal == null) stockTotal = BigDecimal.ZERO;
+
         dto.setStockActual(stockTotal);
 
-        // 3. LOGICA DEL SEMÁFORO (Alertas)
-
-        // Alerta Amarilla: ¿Es bajo stock?
-        // Si stockTotal <= stockMinimoAlerta, entonces es true
         boolean esBajoStock = stockTotal.compareTo(v.getStockMinimoAlerta()) <= 0;
         dto.setStockBajo(esBajoStock);
 
-        // Alerta Roja: Fecha de vencimiento más próxima
         if (v.getProducto().isTieneVencimiento()) {
-            // Buscamos el primer lote con stock > 0 ordenado por fecha
             LoteProducto loteMasViejo = loteRepository
                     .findFirstByVarianteIdAndStockActualGreaterThanOrderByFechaVencimientoAsc(v.getId(), BigDecimal.ZERO);
 

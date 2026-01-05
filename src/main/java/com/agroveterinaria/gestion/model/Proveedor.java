@@ -17,7 +17,7 @@ public class Proveedor {
     private String nombreEmpresa;
 
     @Column(length = 100)
-    private String contacto; // Nombre de la persona
+    private String contacto;
 
     @Column(length = 20)
     private String telefono;

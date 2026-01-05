@@ -19,7 +19,7 @@ public class VarianteProducto {
 
     @NotBlank
     @Column(nullable = false, length = 100)
-    private String nombreVariante; // "Botella 1L", "Saco 50kg"
+    private String nombreVariante;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -33,12 +33,11 @@ public class VarianteProducto {
     @Column(precision = 10, scale = 2)
     private BigDecimal precioVentaMayorista;
 
-    // Lógica para abrir saco
     private boolean sePuedeAbrir = false;
 
     @Positive
     @Column(precision = 10, scale = 2)
-    private BigDecimal factorConversion = BigDecimal.ONE; // Ej: 50.00
+    private BigDecimal factorConversion = BigDecimal.ONE;
 
     @PositiveOrZero
     @Column(nullable = false, precision = 10, scale = 2)

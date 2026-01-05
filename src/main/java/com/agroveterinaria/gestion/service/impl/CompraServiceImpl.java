@@ -17,11 +17,11 @@ import java.time.LocalDate;
 public class CompraServiceImpl implements CompraService {
 
     private final CompraRepository compraRepository;
-    private final DetalleCompraRepository detalleCompraRepository; // ¡Créalo si no existe! (ver nota abajo)
+    private final DetalleCompraRepository detalleCompraRepository;
     private final ProveedorRepository proveedorRepository;
     private final VarianteProductoRepository varianteRepository;
     private final LoteProductoRepository loteRepository;
-    private final PagoProveedorRepository pagoProveedorRepository; // ¡Créalo si no existe!
+    private final PagoProveedorRepository pagoProveedorRepository;
 
     @Override
     @Transactional
@@ -45,8 +45,6 @@ public class CompraServiceImpl implements CompraService {
         }
         compra.setMontoPagado(pagado);
 
-        // Determinar Estado de Pago (Deuda o Pagado)
-        // Total a Pagar al proveedor = Costo Productos (El flete suele ser aparte, pero asumiremos deuda de producto)
         if (pagado.compareTo(dto.getCostoTotalProductos()) >= 0) {
             compra.setEstadoPago(Compra.EstadoPagoCompra.PAGADO);
         } else if (pagado.compareTo(BigDecimal.ZERO) > 0) {
@@ -62,7 +60,6 @@ public class CompraServiceImpl implements CompraService {
             VarianteProducto variante = varianteRepository.findById(item.getVarianteId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado: " + item.getVarianteId()));
 
-            // A. Guardar Detalle Compra (Histórico de precios)
             DetalleCompra detalle = new DetalleCompra();
             detalle.setCompra(compraGuardada);
             detalle.setVariante(variante);
@@ -71,25 +68,20 @@ public class CompraServiceImpl implements CompraService {
             detalle.setCostoUnitario(item.getCostoUnitario());
             detalle.setSubtotal(item.getCantidadComprada().multiply(item.getCostoUnitario()));
 
-            // Necesitamos el repositorio DetalleCompraRepository (Interface simple JpaRepository)
-            // Si no lo creaste en el paso anterior, Spring te avisará.
-            detalleCompraRepository.save(detalle); // Descomentar cuando tengas el repo
+            detalleCompraRepository.save(detalle);
 
-            // B. CREAR LOTE (Aumentar Stock Real)
             LoteProducto lote = new LoteProducto();
             lote.setVariante(variante);
             lote.setNumeroLote(item.getNumeroLote() != null ? item.getNumeroLote() : "SIN-LOTE-" + LocalDate.now());
             lote.setFechaVencimiento(item.getFechaVencimiento());
             lote.setFechaIngreso(LocalDate.now());
 
-            // STOCK FINAL = Comprado + Bonificación (Regalo)
             BigDecimal cantidadTotal = item.getCantidadComprada().add(item.getCantidadBonificacion());
             lote.setStockActual(cantidadTotal);
 
             loteRepository.save(lote);
         }
 
-        // 4. Registrar Pago Inicial en BD (si hubo)
         if (dto.getPagoInicial() != null && dto.getPagoInicial().getMonto().compareTo(BigDecimal.ZERO) > 0) {
             PagoProveedor pago = new PagoProveedor();
             pago.setCompra(compraGuardada);
@@ -97,7 +89,7 @@ public class CompraServiceImpl implements CompraService {
             pago.setFechaPago(java.time.LocalDateTime.now());
             pago.setMetodoPago(dto.getPagoInicial().getMetodoPago());
 
-            pagoProveedorRepository.save(pago); // Descomentar cuando tengas el repo
+            pagoProveedorRepository.save(pago);
         }
 
         return compraGuardada;

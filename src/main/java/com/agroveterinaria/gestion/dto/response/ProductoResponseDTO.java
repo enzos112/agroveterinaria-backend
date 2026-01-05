@@ -7,9 +7,8 @@ import java.util.List;
 public class ProductoResponseDTO {
     private Long id;
     private String nombre;
-    private String categoria; // Solo el nombre de la categoría, no el objeto entero
+    private String categoria;
     private boolean tieneVencimiento;
 
-    // Lista de sus variantes (Ej: "Botella 1L", "Saco 50kg")
     private List<VarianteResponseDTO> presentaciones;
 }

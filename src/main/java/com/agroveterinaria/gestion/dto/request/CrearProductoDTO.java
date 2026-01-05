@@ -12,7 +12,7 @@ public class CrearProductoDTO {
     private String descripcion;
 
     @NotNull(message = "Debe indicar si tiene vencimiento")
-    private Boolean tieneVencimiento; // true/false
+    private Boolean tieneVencimiento;
 
     @NotNull(message = "La categoría es obligatoria")
     private Long categoriaId;

@@ -20,19 +20,17 @@ import java.util.List;
 public class VentaServiceImpl implements VentaService {
 
     private final VentaRepository ventaRepository;
-    private final DetalleVentaRepository detalleVentaRepository; // ¡Créalo! (Interface vacía)
-    private final PagoVentaRepository pagoVentaRepository; // ¡Créalo! (Interface vacía)
+    private final DetalleVentaRepository detalleVentaRepository;
+    private final PagoVentaRepository pagoVentaRepository;
     private final UsuarioRepository usuarioRepository;
     private final ClienteRepository clienteRepository;
     private final VarianteProductoRepository varianteRepository;
     private final LoteProductoRepository loteRepository;
-    private final ServicioRepository servicioRepository; // ¡Créalo! (Interface vacía)
-
+    private final ServicioRepository servicioRepository;
     @Override
     @Transactional
     public VentaResponseDTO registrarVenta(RegistrarVentaDTO dto) {
 
-        // 1. Obtener Usuario (Por ahora hardcodeado ID 1 hasta que tengamos Login real)
         Usuario vendedor = usuarioRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("Usuario vendedor no encontrado"));
 
@@ -40,10 +38,9 @@ public class VentaServiceImpl implements VentaService {
         Venta venta = new Venta();
         venta.setUsuario(vendedor);
         venta.setFechaVenta(LocalDateTime.now());
-        venta.setMontoTotal(dto.getMontoTotal());
+        venta.setTotalVenta(dto.getMontoTotal());
         venta.setMontoDescuentoGlobal(dto.getDescuentoGlobal());
 
-        // Manejo de Cliente y Deuda
         BigDecimal totalPagado = dto.getPagos().stream()
                 .map(PagoVentaRequest::getMonto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -53,7 +50,6 @@ public class VentaServiceImpl implements VentaService {
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
             venta.setCliente(cliente);
 
-            // Si pagó menos del total, aumentar deuda
             if (totalPagado.compareTo(dto.getMontoTotal()) < 0) {
                 BigDecimal deudaGenerada = dto.getMontoTotal().subtract(totalPagado);
                 cliente.setDeudaActual(cliente.getDeudaActual().add(deudaGenerada));
@@ -63,7 +59,6 @@ public class VentaServiceImpl implements VentaService {
                 venta.setEstado(Venta.EstadoVenta.PAGADO);
             }
         } else {
-            // Venta anónima: Debe pagar completo
             if (totalPagado.compareTo(dto.getMontoTotal()) < 0) {
                 throw new RuntimeException("Las ventas anónimas deben pagarse en su totalidad");
             }
@@ -72,7 +67,6 @@ public class VentaServiceImpl implements VentaService {
 
         Venta ventaGuardada = ventaRepository.save(venta);
 
-        // 3. Procesar Detalles y DESCONTAR STOCK
         for (DetalleVentaRequest item : dto.getDetalles()) {
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(ventaGuardada);
@@ -87,7 +81,6 @@ public class VentaServiceImpl implements VentaService {
                         .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
                 detalle.setVariante(variante);
 
-                // --- LÓGICA FIFO PARA DESCONTAR STOCK ---
                 descontarStock(variante.getId(), item.getCantidad());
 
             } else {
@@ -99,7 +92,6 @@ public class VentaServiceImpl implements VentaService {
             detalleVentaRepository.save(detalle);
         }
 
-        // 4. Registrar Pagos
         for (PagoVentaRequest p : dto.getPagos()) {
             PagoVenta pago = new PagoVenta();
             pago.setVenta(ventaGuardada);
@@ -109,16 +101,13 @@ public class VentaServiceImpl implements VentaService {
             pagoVentaRepository.save(pago);
         }
 
-        // Retornamos un DTO vacío o con ID por ahora (luego mapeamos el completo)
         VentaResponseDTO response = new VentaResponseDTO();
         response.setId(ventaGuardada.getId());
-        response.setTotal(ventaGuardada.getMontoTotal());
+        response.setTotal(ventaGuardada.getTotalVenta());
         return response;
     }
 
-    // Método auxiliar para descontar stock FIFO
     private void descontarStock(Long varianteId, BigDecimal cantidadRequerida) {
-        // Traemos los lotes ordenados por fecha de vencimiento (los más viejos primero)
         List<LoteProducto> lotes = loteRepository.findByVarianteIdOrderByFechaVencimientoAsc(varianteId);
 
         BigDecimal pendiente = cantidadRequerida;
@@ -128,11 +117,9 @@ public class VentaServiceImpl implements VentaService {
 
             if (lote.getStockActual().compareTo(BigDecimal.ZERO) > 0) {
                 if (lote.getStockActual().compareTo(pendiente) >= 0) {
-                    // El lote tiene suficiente para cubrir todo lo que falta
                     lote.setStockActual(lote.getStockActual().subtract(pendiente));
                     pendiente = BigDecimal.ZERO;
                 } else {
-                    // El lote tiene algo, pero no alcanza para todo. Lo vaciamos y seguimos al siguiente.
                     pendiente = pendiente.subtract(lote.getStockActual());
                     lote.setStockActual(BigDecimal.ZERO);
                 }

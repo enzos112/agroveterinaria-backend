@@ -19,7 +19,7 @@ public class LoteProducto {
     private VarianteProducto variante;
 
     @Column(length = 50)
-    private String numeroLote; // Opcional
+    private String numeroLote;
 
     private LocalDate fechaVencimiento;
 

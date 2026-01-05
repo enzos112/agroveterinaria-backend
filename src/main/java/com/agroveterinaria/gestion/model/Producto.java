@@ -19,10 +19,24 @@ public class Producto {
     @Column(columnDefinition = "TEXT")
     private String descripcion;
 
+    private Integer stock = 0;
+
+    private Double stockGranel = 0.0;
+
+    private Double factorConversion;
+
+    private String unidadGranel;
+
+    private boolean activo = true;
+
     @Column(nullable = false)
-    private boolean tieneVencimiento = true; // false para accesorios
+    private boolean tieneVencimiento = true;
 
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "proveedor_id")
+    private Proveedor proveedor;
 }

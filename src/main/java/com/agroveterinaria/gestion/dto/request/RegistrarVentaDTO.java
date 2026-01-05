@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class RegistrarVentaDTO {
 
-    private Long clienteId; // Opcional (puede ser null si es venta rápida)
+    private Long clienteId;
 
     @NotNull(message = "El monto total es obligatorio")
     @PositiveOrZero
@@ -18,12 +18,10 @@ public class RegistrarVentaDTO {
     @PositiveOrZero
     private BigDecimal descuentoGlobal;
 
-    // Lista de productos/servicios que lleva
     @NotEmpty(message = "La venta debe tener al menos un producto o servicio")
-    @Valid // Activa las validaciones dentro de la lista
+    @Valid
     private List<DetalleVentaRequest> detalles;
 
-    // Lista de pagos (Efectivo + Yape)
     @NotEmpty(message = "Debe registrar al menos un pago")
     @Valid
     private List<PagoVentaRequest> pagos;

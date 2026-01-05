@@ -17,13 +17,11 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // CLAVE SECRETA: Debe ser de al menos 256 bits (32 caracteres)
-    // En producción, esto debería venir de application.properties
+
     private static final String SECRET_KEY = "MI_CLAVE_SUPER_SECRETA_PARA_LA_AGROVETERINARIA_RURAL_2026";
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> extraClaims = new HashMap<>();
-        // Puedes agregar info extra al token aquí si quieres (ej: ID del usuario)
         return createToken(extraClaims, userDetails.getUsername());
     }
 
@@ -32,7 +30,7 @@ public class JwtService {
                 .setClaims(extraClaims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 Horas de validez
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -24,11 +24,11 @@ public class DetalleCompra {
     @NotNull
     @Positive
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal cantidadComprada; // Las que cuestan
+    private BigDecimal cantidadComprada;
 
     @PositiveOrZero
     @Column(precision = 10, scale = 2)
-    private BigDecimal cantidadBonificacion = BigDecimal.ZERO; // Las gratis
+    private BigDecimal cantidadBonificacion = BigDecimal.ZERO;
 
     @NotNull
     @PositiveOrZero

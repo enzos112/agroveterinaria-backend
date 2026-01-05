@@ -24,23 +24,21 @@ public class ArqueoCaja {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal saldoInicialEfectivo;
 
-    // Campos calculados al cierre (Snapshot)
     @Column(precision = 10, scale = 2)
     private BigDecimal saldoEsperadoEfectivo;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal saldoEsperadoDigital;
 
-    // Lo que el usuario cuenta
     @PositiveOrZero
     @Column(precision = 10, scale = 2)
     private BigDecimal saldoRealEfectivo;
 
     @Column(precision = 10, scale = 2)
-    private BigDecimal diferencia; // Real - Esperado
+    private BigDecimal diferencia;
 
     @Column(columnDefinition = "TEXT")
-    private String justificacionDiferencia; // Obligatorio si diferencia != 0
+    private String justificacionDiferencia;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

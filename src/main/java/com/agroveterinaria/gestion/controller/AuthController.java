@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -26,26 +25,22 @@ public class AuthController {
     // LOGIN
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO request) {
-        // 1. Autenticar (Spring Security valida usuario y contraseña)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getNombreUsuario(), request.getContrasena())
         );
 
-        // 2. Si pasa, buscamos al usuario completo
         Usuario usuario = usuarioRepository.findByNombreUsuario(request.getNombreUsuario())
                 .orElseThrow();
 
-        // 3. Generamos el Token
         String jwtToken = jwtService.generateToken(
                 new org.springframework.security.core.userdetails.User(
                         usuario.getNombreUsuario(),
                         usuario.getContrasena(),
                         usuario.isActivo(), true, true, true,
-                        java.util.Collections.emptyList() // No necesitamos roles aquí para generar, ya los carga el UserDetails
+                        java.util.Collections.emptyList()
                 )
         );
 
-        // 4. Responder
         LoginResponseDTO response = new LoginResponseDTO();
         response.setToken(jwtToken);
         response.setNombreUsuario(usuario.getNombreUsuario());
@@ -54,10 +49,9 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // REGISTRO INICIAL (Solo para crear el primer Admin, luego se borra o protege)
     @PostMapping("/register")
     public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
-        usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena())); // Encriptar
+        usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
         return ResponseEntity.ok(usuarioRepository.save(usuario));
     }
 }

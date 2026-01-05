@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public class DashboardStatsDTO {
     private BigDecimal ventasHoy;
     private int transaccionesHoy;
-    private BigDecimal deudaPorCobrarTotal; // Cartera morosa
-    private long productosPorVencerCount; // Semáforo Rojo
-    private long productosStockBajoCount; // Semáforo Amarillo
+    private BigDecimal deudaPorCobrarTotal;
+    private long productosPorVencerCount;
+    private long productosStockBajoCount;
 }

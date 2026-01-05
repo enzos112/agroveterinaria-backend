@@ -12,5 +12,5 @@ public class PagoCompraRequest {
     private BigDecimal monto;
 
     @NotNull
-    private MetodoPagoProveedor metodoPago; // EFECTIVO_CAJA o BANCO
+    private MetodoPagoProveedor metodoPago;
 }

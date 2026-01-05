@@ -11,8 +11,6 @@ public class ResumenCajaDTO {
     private LocalDateTime fechaApertura;
     private EstadoCaja estado;
 
-    // Para el vendedor esto vendrá en null (Cierre Ciego)
-    // Para el admin vendrá con datos.
     private BigDecimal totalVendidoEfectivo;
     private BigDecimal totalVendidoDigital;
     private BigDecimal totalSalidasFletes;

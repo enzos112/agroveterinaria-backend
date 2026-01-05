@@ -2,13 +2,16 @@ package com.agroveterinaria.gestion.repository;
 
 import com.agroveterinaria.gestion.model.Venta;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface VentaRepository extends JpaRepository<Venta, Long> {
-    // Para reportes de ventas entre fechas
-    List<Venta> findByFechaVentaBetween(LocalDateTime inicio, LocalDateTime fin);
 
-    // Para ver ventas de un usuario específico (cierre ciego)
-    List<Venta> findByUsuarioIdAndFechaVentaBetween(Long usuarioId, LocalDateTime inicio, LocalDateTime fin);
+    @Query("SELECT COALESCE(SUM(v.totalVenta), 0) FROM Venta v WHERE v.fechaVenta >= :inicio AND v.fechaVenta <= :fin")
+    BigDecimal sumarVentasEntre(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
+
+    @Query("SELECT COUNT(v) FROM Venta v WHERE v.fechaVenta >= :inicio AND v.fechaVenta <= :fin")
+    long countByFechaBetween(@Param("inicio") LocalDateTime inicio, @Param("fin") LocalDateTime fin);
 }

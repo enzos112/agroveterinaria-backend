@@ -13,7 +13,7 @@ public class CodigoAutorizacion {
     private Long id;
 
     @Column(nullable = false, length = 4)
-    private String codigo; // Ej: "4821"
+    private String codigo;
 
     @Column(unique = true, nullable = false)
     private LocalDate fechaGeneracion;

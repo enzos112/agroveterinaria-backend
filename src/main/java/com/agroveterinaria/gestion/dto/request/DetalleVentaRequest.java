@@ -21,8 +21,8 @@ public class DetalleVentaRequest {
 
     @NotNull
     @PositiveOrZero(message = "El precio no puede ser negativo")
-    private BigDecimal precioUnitarioPactado; // El precio final (puede tener rebaja)
+    private BigDecimal precioUnitarioPactado;
 
     @NotNull
-    private TipoPrecio tipoPrecio; // PUBLICO, NEGOCIADO...
+    private TipoPrecio tipoPrecio;
 }

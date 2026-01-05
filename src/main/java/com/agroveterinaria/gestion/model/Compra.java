@@ -19,7 +19,7 @@ public class Compra {
     private Proveedor proveedor;
 
     @Column(length = 50)
-    private String numeroDocumento; // Factura
+    private String numeroDocumento;
 
     @NotNull
     private LocalDate fechaCompra;
@@ -35,7 +35,7 @@ public class Compra {
 
     @PositiveOrZero
     @Column(precision = 10, scale = 2)
-    private BigDecimal montoPagado = BigDecimal.ZERO; // Para controlar deuda
+    private BigDecimal montoPagado = BigDecimal.ZERO;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

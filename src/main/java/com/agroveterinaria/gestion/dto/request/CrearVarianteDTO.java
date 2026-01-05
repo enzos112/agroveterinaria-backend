@@ -14,7 +14,7 @@ public class CrearVarianteDTO {
     private String nombreVariante;
 
     @NotNull(message = "La unidad de medida es obligatoria")
-    private UnidadMedida unidadMedida; // ENUM: UNIDAD, KG, LITRO...
+    private UnidadMedida unidadMedida;
 
     @NotNull
     @DecimalMin(value = "0.10", message = "El precio de venta debe ser mayor a 0.10")
@@ -23,11 +23,10 @@ public class CrearVarianteDTO {
     @PositiveOrZero
     private BigDecimal precioVentaMayorista;
 
-    // Configuración para "Abrir Saco"
     private boolean sePuedeAbrir;
 
     @Positive(message = "El factor de conversión debe ser positivo")
-    private BigDecimal factorConversion; // Ej: 50
+    private BigDecimal factorConversion;
 
     @PositiveOrZero
     private BigDecimal stockMinimoAlerta;

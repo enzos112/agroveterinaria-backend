@@ -17,7 +17,6 @@ public class DetalleVenta {
     @JoinColumn(name = "venta_id", nullable = false)
     private Venta venta;
 
-    // Puede ser Producto O Servicio (uno será null)
     @ManyToOne
     @JoinColumn(name = "variante_id")
     private VarianteProducto variante;
@@ -28,7 +27,7 @@ public class DetalleVenta {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private TipoItem tipoItem; // PRODUCTO o SERVICIO
+    private TipoItem tipoItem;
 
     @NotNull
     @Positive

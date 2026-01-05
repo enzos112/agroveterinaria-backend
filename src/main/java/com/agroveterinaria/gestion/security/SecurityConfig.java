@@ -21,15 +21,11 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
 
-    // Nota: No necesitas inyectar UserDetailsService aquí si no lo usas explícitamente,
-    // Spring lo encuentra solo para el AuthenticationManager.
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Deshabilitar CSRF para API REST
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas públicas (Login y Registro)
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Rutas de ADMIN

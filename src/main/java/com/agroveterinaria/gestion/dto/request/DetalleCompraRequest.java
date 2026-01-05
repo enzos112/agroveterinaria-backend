@@ -15,14 +15,13 @@ public class DetalleCompraRequest {
     private BigDecimal cantidadComprada; // Ej: 12 unidades
 
     @PositiveOrZero
-    private BigDecimal cantidadBonificacion = BigDecimal.ZERO; // Ej: 1 unidad de regalo
+    private BigDecimal cantidadBonificacion = BigDecimal.ZERO;
 
     @NotNull
     @PositiveOrZero
-    private BigDecimal costoUnitario; // Ej: 15 soles
+    private BigDecimal costoUnitario;
 
-    // Datos para generar el LOTE automáticamente
-    private String numeroLote; // El que viene impreso en la caja
+    private String numeroLote;
 
     @Future(message = "Si ingresa vencimiento, debe ser fecha futura")
     private LocalDate fechaVencimiento;

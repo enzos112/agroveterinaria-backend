@@ -14,11 +14,11 @@ public class Usuario {
 
     @NotBlank
     @Column(unique = true, nullable = false, length = 50)
-    private String nombreUsuario; // DNI o user corto
+    private String nombreUsuario;
 
     @NotBlank
     @Column(nullable = false)
-    private String contrasena; // Hash BCrypt
+    private String contrasena;
 
     @Column(nullable = false, length = 100)
     private String nombreCompleto;

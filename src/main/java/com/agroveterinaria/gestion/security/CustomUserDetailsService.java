@@ -20,19 +20,26 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        System.out.println("--- DIAGNÓSTICO LOGIN INICIO ---");
+        System.out.println("1. Buscando usuario: " + username);
+
         Usuario usuario = usuarioRepository.findByNombreUsuario(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
+                .orElseThrow(() -> {
+                    System.out.println("!!! Usuario NO encontrado en BD");
+                    return new UsernameNotFoundException("Usuario no encontrado");
+                });
 
-        // Convertimos nuestro Usuario (Entity) al UserDetails (Security)
-        // Agregamos el prefijo "ROLE_" porque Spring Security lo espera así por defecto
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + usuario.getRol().name());
+        System.out.println("2. Usuario encontrado: " + usuario.getNombreUsuario());
 
-        return new User(
-                usuario.getNombreUsuario(),
-                usuario.getContrasena(),
-                usuario.isActivo(),
-                true, true, true, // accountNonExpired, etc. (lo dejamos en true por simplicidad)
-                Collections.singletonList(authority)
-        );
+        System.out.println("3. Hash en Base de Datos: " + usuario.getContrasena());
+
+        System.out.println("4. Rol del usuario: " + usuario.getRol());
+        System.out.println("--- DIAGNÓSTICO LOGIN FIN ---");
+
+        return org.springframework.security.core.userdetails.User
+                .withUsername(usuario.getNombreUsuario())
+                .password(usuario.getContrasena())
+                .roles(usuario.getRol().toString())
+                .build();
     }
 }

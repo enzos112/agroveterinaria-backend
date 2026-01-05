@@ -17,11 +17,11 @@ public class Venta {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario; // Vendedor
+    private Usuario usuario;
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
-    private Cliente cliente; // Puede ser null (Venta anónima)
+    private Cliente cliente;
 
     @NotNull
     private LocalDateTime fechaVenta;
@@ -29,7 +29,7 @@ public class Venta {
     @NotNull
     @PositiveOrZero
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal montoTotal;
+    private BigDecimal totalVenta;
 
     @PositiveOrZero
     @Column(precision = 10, scale = 2)
@@ -39,7 +39,6 @@ public class Venta {
     @Column(nullable = false)
     private EstadoVenta estado;
 
-    // Relación bidireccional para facilitar guardado en cascada
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL)
     private List<DetalleVenta> detalles;
 

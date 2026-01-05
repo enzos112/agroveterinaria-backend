@@ -12,7 +12,6 @@ public class CrearClienteDTO {
     @Pattern(regexp = "^[a-zA-ZñÑáéíóúÁÉÍÓÚ ]+$", message = "El nombre solo puede contener letras y espacios")
     private String nombreCompleto;
 
-    // REGLA: Empieza con 9, tiene 9 dígitos exactos, y NO tiene 4 dígitos iguales seguidos.
     @Pattern(regexp = "^(?!.*(\\d)\\1{3})9\\d{8}$",
             message = "Número inválido: Debe empezar con 9, tener 9 dígitos y no tener 4 números iguales seguidos")
     private String telefono;
